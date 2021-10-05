@@ -12,17 +12,17 @@ from timeit import default_timer as timer
 
 
 images = torch.zeros(9,3,224,224)
-# gerenate image
+
 
 original_model = models.alexnet(pretrained=True)
-# gerenate model
+
 print("Main model")
 child_counter = 0
 for child in original_model.children():
    print(" child", child_counter, "is:")
    print(child)
    child_counter += 1
-# output details of main model
+
 
 class AlexNetConv4(nn.Module):
             def __init__(self):
@@ -49,9 +49,8 @@ print(outputs1)
 print("Sending Data to server")
 start=timer()
 
-TCP_IP2 = '192.168.1.105'
+TCP_IP2 = '129.32.94.246'
 TCP_PORT2 = 5006
-#server IP address
 
 s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((TCP_IP2,TCP_PORT2))
@@ -64,7 +63,7 @@ print("data sent to server")
 
 
 #print('Final Output')
-TCP_IP2 = '0.0.0.0'
+TCP_IP2 = '10.108.27.196'
 TCP_PORT2 = 5005
 buf_size=4096
  
