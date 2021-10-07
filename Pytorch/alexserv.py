@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torchvision import models
+from timeit import default_timer as timer
 
 import socket
 import pickle
@@ -30,19 +31,19 @@ for child in original_model.children():
    child_counter += 1
 
 
-class AlexNetConv5(nn.Module):
+class Servermodel(nn.Module):
             def __init__(self):
-                super(AlexNetConv5, self).__init__()
+                super(Servermodel, self).__init__()
                 self.features = nn.Sequential(
                     # start at conv5
- 		    *(list(original_model.features.children())[-3:] + [nn.AvgPool2d(1), Flatten()] + list(original_model.classifier.children()))
-                        
+ 		   # *(list(original_model.features.children())[-3:] + [nn.AvgPool2d(1), Flatten()] + list(original_model.classifier.children()))
+             *(list(original_model.features.children())+ [nn.AvgPool2d(1), Flatten()] + list(original_model.classifier.children()))            
                  )
             def forward(self, x):
                 x = self.features(x)
                 return x
 
-model2 = AlexNetConv5()
+model2 = Servermodel()
 print("Server model")
 child_counter = 0
 for child in model2.children():
@@ -54,7 +55,7 @@ for child in model2.children():
 while 1:
  print('Waiting for Raspberry 1')
  
- TCP_IP1 ='129.32.94.251'
+ TCP_IP1 ='0.0.0.0'
  TCP_PORT1 = 5006
  BUFFER_SIZE = 4096
  
@@ -65,6 +66,7 @@ while 1:
  conn, addr = s.accept()
  data=[]
  print ('Raspberry Device:',addr)
+ start = timer()
  while 1:
   tensor = conn.recv(BUFFER_SIZE)
   if not tensor: break
@@ -77,10 +79,10 @@ while 1:
 
 
  outputs2 = model2(inputs)
- final_output_send =outputs2.numpy()
+ final_output_send =outputs2.detach().numpy()
 
  print(final_output_send)
- TCP_IP2 ='10.108.31.196'
+ TCP_IP2 ='192.168.1.100'
  TCP_PORT2 = 5005
  BUFFER_SIZE = 4096
 
@@ -88,8 +90,10 @@ while 1:
  s.connect((TCP_IP2, TCP_PORT2))
  data_final=pickle.dumps(final_output_send,protocol=pickle.HIGHEST_PROTOCOL)
  s.sendall(data_final)
+ end = timer()
  print('Server execution done!!')
-
+ print('Server process time=')
+ print(end-start)
 
 
 
